@@ -81,7 +81,7 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 	 * @author  Talha
 	 *
 	 */
-	/*public boolean isWithinRange(Person person) {
+	public boolean isWithinRange(Person person) {
 		Map<String, Id<Vehicle>> vehicles = VehicleUtils.getVehicleIds(person);
 
 
@@ -103,7 +103,6 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 		// Check if the distance is within the specified range
 		return distance <= range;
 	}
-*/
 
 	//-------------------------------------------------------routing---------------------------------------------------------------------------
 
