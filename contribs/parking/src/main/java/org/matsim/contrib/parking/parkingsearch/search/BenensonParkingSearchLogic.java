@@ -127,7 +127,7 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 		double distanceToDest = Double.MAX_VALUE;
 
 		Node nextNode;
-		Id<Link> nextLinkId = null;
+		Id<Link> nextLinkId = null;   ////////////author Talha
 
 		for (Link outLink : ParkingUtils.getOutgoingLinksForMode(currentLink, mode)) {
 			Id<Link> outLinkId = outLink.getId();
@@ -147,14 +147,14 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 				}
 			}
 		}
-		this.knownLinks.add(nextLinkId);
+		this.knownLinks.add(nextLinkId);  ////////////author Talha
 		return nextLinkId;
 	}
 
 	public Id<Link> getNextLinkRandomInAcceptableDistance(Id<Link> currentLinkId, Id<Link> endLinkId, Id<Vehicle> vehicleId, double firstDestLinkEnterTime, double timeOfDay, String mode) {
 
 		Link nextLink;
-		Id<Link> nextLinkId = null;
+		Id<Link> nextLinkId = null; ////////////author Talha
 		Link currentLink = network.getLinks().get(currentLinkId);
 		List<Link> outGoingLinks = ParkingUtils.getOutgoingLinksForMode(currentLink, mode);
 		List<Link> outGoingLinksCopy = new ArrayList<>(outGoingLinks);
@@ -170,19 +170,22 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
         }
         logger.error("vehicle " + vehicleId + " finds no outlink in acceptable distance going out from link " + currentLinkId + ". it just takes a random next link");
 		nextLinkId=outGoingLinksCopy.get(random.nextInt(outGoingLinksCopy.size())).getId();
-		this.knownLinks.add(nextLinkId);
+		this.knownLinks.add(nextLinkId);  ////////////author Talha
 		return nextLinkId ;
 
 	}
+
+
+	/**
+	 * @author  Talha
+	 *
+	 */
 
 
 	public Id<Link> getNextLinkAfterCommunication( Id<Link> destinationLinkId,Id<Link> currentLinkId) {
 		//Map<Id<Link>, Set<Id<ActivityFacility>>> FreeParkLinks = ((FacilityBasedParkingManager) this.parkingManager).getFreeParkingSpacesLinks();
 
 		Map<Id<Link>, Set<Id<ActivityFacility>>>  FreeParkLinks=((FacilityBasedParkingManager) this.parkingManager).getLinkIdifParkingavailible(currentLinkId);
-
-
-
 
 
 
@@ -227,52 +230,6 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 		return ParkLinkId;
 
 	}
-
-/*
-
-   public Id<Link> getNextLinkCommunicationCenterRouting( Id<Link> destinationLinkId) {
-      Map<Id<Link>, Set<Id<ActivityFacility>>> FreeParkLinks = ((FacilityBasedParkingManager) this.parkingManager).getFreeParkingSpacesLinks();
-
-      //calculate the distance to fromNode of destination link instead of distance to activity
-      Node destination = network.getLinks().get(destinationLinkId).getFromNode();
-
-
-      // The next link is determined by calculating the Euclidean distance between the destination node and the to-node of the outgoing links from the current link.
-      // The link with the minimum distance to the destination node is selected as the next link.
-      // The routing stops when the current link is equal to the destination link.
-
-      double distanceToDest = Double.MAX_VALUE;
-      Node nextNode;
-      Id<Link> ParkLinkId = null;
-
-      for (Id<Link> outLinkId : FreeParkLinks.keySet()) {
-         if (((FacilityBasedParkingManager) this.parkingManager).getNrOfFreeParkingSpacesOnLink(outLinkId)>0){
-         Link outLink = network.getLinks().get(outLinkId);
-
-
-         //If the destination link is not found among the outgoing links of the current link,
-         // the method calculates the Euclidean distance from the to-node of each outgoing link to the destination node.
-         //The outgoing link with the smallest distance is chosen as the next link to be followed.
-
-         nextNode = outLink.getToNode();
-         double ddd = NetworkUtils.getEuclideanDistance(destination.getCoord(),nextNode.getCoord());
-         if( ddd < distanceToDest){
-            ParkLinkId = outLinkId;
-            distanceToDest = ddd;
-         }
-         else if(ddd == distanceToDest){
-            if (Math.random() > 0.5){
-               ParkLinkId = outLinkId;
-            }
-         }
-      }
-      }
-
-      return ParkLinkId;
-
-   }
-*/
-
 
 
 
