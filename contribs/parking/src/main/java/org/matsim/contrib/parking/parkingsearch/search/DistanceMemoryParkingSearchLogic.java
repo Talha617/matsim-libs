@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.matsim.contrib.parking.parkingsearch.search;
 
@@ -30,13 +30,13 @@ public class DistanceMemoryParkingSearchLogic implements ParkingSearchLogic {
 	private static final Logger logger = LogManager.getLogger(DistanceMemoryParkingSearchLogic.class);
 
 	private static final boolean doLogging = false;
-	
+
 	private Network network;
-	private HashSet<Id<Link>> knownLinks;   
-	
+	private HashSet<Id<Link>> knownLinks;
+
 	/**
-	 * @param network 
-	 * 
+	 * @param network
+	 *``
 	 */
 	public DistanceMemoryParkingSearchLogic(Network network) {
 		this.network = network;
@@ -49,7 +49,7 @@ public class DistanceMemoryParkingSearchLogic implements ParkingSearchLogic {
 		double shortestDistance = Double.MAX_VALUE;
 		int nrKnownLinks = 0;
 		Id<Link> nextLink = null;
-		
+
 		if(doLogging) logger.info("number of outlinks of link " + currentLinkId + ": " + outLinks.size());
 
 		for (Link outLink : outLinks) {
@@ -78,7 +78,7 @@ public class DistanceMemoryParkingSearchLogic implements ParkingSearchLogic {
 		if(doLogging)logger.error("vehicle " + vehicleId + " knew " + nrKnownLinks + " out of " + outLinks.size() + " outlinks of link " + currentLinkId);
 		if(outLinks.size() == nrKnownLinks ){
 			if(doLogging)logger.error("vehicle " + vehicleId + " knows all outlinks of link " + currentLinkId);
-			
+
 			//return random Link
 			int index = MatsimRandom.getRandom().nextInt(outLinks.size());
 			Iterator<Link> iter = outLinks.iterator();
@@ -86,8 +86,8 @@ public class DistanceMemoryParkingSearchLogic implements ParkingSearchLogic {
 			    iter.next();
 			}
 			nextLink = iter.next().getId();
-		}				
-		
+		}
+
 		if(nextLink == null){
 			throw new RuntimeException("the next Link Id for vehicle " + vehicleId + " on current link " + currentLinkId + " couldn't be calculated.");
 		}
@@ -108,5 +108,5 @@ public class DistanceMemoryParkingSearchLogic implements ParkingSearchLogic {
 	public void addToKnownLinks(Id<Link> linkId){
 		this.knownLinks.add(linkId);
 	}
-	
+
 }

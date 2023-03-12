@@ -2,6 +2,7 @@ package org.matsim.contrib.parking.parkingsearch.search;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.locationtech.jts.util.Memory;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -10,6 +11,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.common.util.DistanceUtils;
 import org.matsim.contrib.parking.parkingchoice.lib.obj.DoubleValueHashMap;
 import org.matsim.contrib.parking.parkingsearch.DynAgent.BenensonDynLeg;
+
 import org.matsim.contrib.parking.parkingsearch.ParkingUtils;
 import org.matsim.contrib.parking.parkingsearch.manager.FacilityBasedParkingManager;
 import org.matsim.contrib.parking.parkingsearch.manager.ParkingSearchManager;
@@ -29,6 +31,8 @@ import java.util.*;
  *doi: 10.1016/j.compenvurbsys.2008.09.011
  *
  */
+
+
 public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 	private static final Logger logger = LogManager.getLogger(BenensonDynLeg.class);
 	private static final boolean logForDebug = false;
@@ -47,8 +51,9 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 	private static final double ACCEPTED_DISTANCE_INCREASING_RATE_PER_MIN = 100;
 	private static final double ACCEPTED_DISTANCE_MAX = 600;
 	private static final double range = 500;
+
 	private final Random random = MatsimRandom.getLocalInstance();
-	//private HashSet<Id<Link>> knownLinks;
+	private HashSet<Id<Link>> knownLinks;
 	private ParkingSearchConfigGroup configGroup;
 	//private DoubleValueHashMap<Id<Link>> FreeKnownParkLinks;
 
@@ -56,6 +61,7 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 		this.network = network;
 		this.configGroup = cfgGroup;
 		this.parkingManager = parkingManager;
+		this.knownLinks = new HashSet<Id<Link>>();
 	}
 
 	@Override
@@ -81,7 +87,7 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 	 * @author  Talha
 	 *
 	 */
-	public boolean isWithinRange(Person person) {
+	/*public boolean isWithinRange(Person person) {
 		Map<String, Id<Vehicle>> vehicles = VehicleUtils.getVehicleIds(person);
 
 
@@ -102,7 +108,7 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 
 		// Check if the distance is within the specified range
 		return distance <= range;
-	}
+	}*/
 
 	//-------------------------------------------------------routing---------------------------------------------------------------------------
 
@@ -114,17 +120,18 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 	 */
 	public Id<Link> getNextLinkBenensonRouting(Id<Link> currentLinkId, Id<Link> destinationLinkId, String mode) {
 		Link currentLink = network.getLinks().get(currentLinkId);
-		//int nrKnownLinks = 0;
+
         //calculate the distance to fromNode of destination link instead of distance to activity
 		Node destination = network.getLinks().get(destinationLinkId).getFromNode();
 
 		double distanceToDest = Double.MAX_VALUE;
+
 		Node nextNode;
 		Id<Link> nextLinkId = null;
 
 		for (Link outLink : ParkingUtils.getOutgoingLinksForMode(currentLink, mode)) {
 			Id<Link> outLinkId = outLink.getId();
-			//if (this.knownLinks.contains(outLinkId)) nrKnownLinks++;
+
 			if (outLinkId.equals(destinationLinkId)) {
 				return outLinkId;
 			}
@@ -140,24 +147,31 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 				}
 			}
 		}
-		//this.knownLinks.add(nextLinkId);
+		this.knownLinks.add(nextLinkId);
 		return nextLinkId;
 	}
 
 	public Id<Link> getNextLinkRandomInAcceptableDistance(Id<Link> currentLinkId, Id<Link> endLinkId, Id<Vehicle> vehicleId, double firstDestLinkEnterTime, double timeOfDay, String mode) {
 
 		Link nextLink;
+		Id<Link> nextLinkId = null;
 		Link currentLink = network.getLinks().get(currentLinkId);
 		List<Link> outGoingLinks = ParkingUtils.getOutgoingLinksForMode(currentLink, mode);
 		List<Link> outGoingLinksCopy = new ArrayList<>(outGoingLinks);
 		int nrOfOutGoingLinks = outGoingLinks.size();
 		for (int i = 1; i <= nrOfOutGoingLinks; i++) {
 			nextLink = outGoingLinks.get(random.nextInt(outGoingLinks.size()));
-            if (isDriverInAcceptableDistance(nextLink.getId(), endLinkId, firstDestLinkEnterTime, timeOfDay)) return nextLink.getId();
+            if (isDriverInAcceptableDistance(nextLink.getId(), endLinkId, firstDestLinkEnterTime, timeOfDay))
+				nextLinkId=nextLink.getId();
 			outGoingLinks.remove(nextLink);
+            	return nextLinkId;
+
+
         }
         logger.error("vehicle " + vehicleId + " finds no outlink in acceptable distance going out from link " + currentLinkId + ". it just takes a random next link");
-		return outGoingLinksCopy.get(random.nextInt(outGoingLinksCopy.size())).getId();
+		nextLinkId=outGoingLinksCopy.get(random.nextInt(outGoingLinksCopy.size())).getId();
+		this.knownLinks.add(nextLinkId);
+		return nextLinkId ;
 
 	}
 
@@ -166,7 +180,6 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 		//Map<Id<Link>, Set<Id<ActivityFacility>>> FreeParkLinks = ((FacilityBasedParkingManager) this.parkingManager).getFreeParkingSpacesLinks();
 
 		Map<Id<Link>, Set<Id<ActivityFacility>>>  FreeParkLinks=((FacilityBasedParkingManager) this.parkingManager).getLinkIdifParkingavailible(currentLinkId);
-
 
 
 
@@ -185,8 +198,11 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 		Node nextNode;
 		Id<Link> ParkLinkId = null;
 
+
+
 		for (Id<Link> outLinkId : FreeParkLinks.keySet()) {
-			if (((FacilityBasedParkingManager) this.parkingManager).getNrOfFreeParkingSpacesOnLink(outLinkId)>0){
+
+			if ((  (FacilityBasedParkingManager) this.parkingManager).getNrOfFreeParkingSpacesOnLink(outLinkId)>0 & this.knownLinks.contains(outLinkId) )   {
 				Link outLink = network.getLinks().get(outLinkId);
 
 
@@ -354,7 +370,9 @@ public class BenensonParkingSearchLogic implements ParkingSearchLogic {
 
 
 
-
+	public void addToKnownLinks(Id<Link> linkId){
+		this.knownLinks.add(linkId);
+	}
 
 
 

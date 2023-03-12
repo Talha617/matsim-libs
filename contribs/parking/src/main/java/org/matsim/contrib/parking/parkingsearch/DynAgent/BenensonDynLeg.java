@@ -8,6 +8,7 @@ import org.matsim.contrib.parking.parkingsearch.events.StartParkingSearchEvent;
 import org.matsim.contrib.parking.parkingsearch.manager.FacilityBasedParkingManager;
 import org.matsim.contrib.parking.parkingsearch.manager.ParkingSearchManager;
 import org.matsim.contrib.parking.parkingsearch.search.BenensonParkingSearchLogic;
+import org.matsim.contrib.parking.parkingsearch.search.DistanceMemoryParkingSearchLogic;
 import org.matsim.contrib.parking.parkingsearch.search.ParkingSearchLogic;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -84,6 +85,7 @@ public class BenensonDynLeg extends ParkingDynLeg{
                         if (logForDebug) logger.error("vehicle " + this.vehicleId + " would like to park on link" + currentLinkId
                                 + "\n \t pUnoccupied = " + pUnoccupied + "\n\t totalObservedParkingSpaces = " + totalObservedParkingSpaces + "\n\t observedFreeSpaces = " + this.observedFreeParkingSpaces);
                         hasFoundParking = parkingManager.reserveSpaceIfVehicleCanParkHere(vehicleId, currentLinkId);
+						((BenensonParkingSearchLogic)this.logic).addToKnownLinks(currentLinkId);////////////////Talha
                     }
 				}
 				else{
